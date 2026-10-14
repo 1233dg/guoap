@@ -27,10 +27,12 @@ abi_args = [item for abi in options.abi or [] for item in ['--abi', abi]]
 subprocess.run([sys.executable, str(root / 'scripts' / 'build_native.py'), '--platform', 'android', *abi_args, *variant.arguments],
                cwd=root, env=env, check=True)
 subprocess.run([flutter, 'pub', 'get'], cwd=root, env=env, check=True)
-build_args = [flutter, 'build', 'apk', '--release', '--split-per-abi', '--no-pub', *variant.flutter_arguments]
+# =========改动点：--release 修改为 --debug =========
+build_args = [flutter, 'build', 'apk', '--debug', '--split-per-abi', '--no-pub', *variant.flutter_arguments]
 if options.abi:
     targets = {'arm64-v8a': 'android-arm64', 'armeabi-v7a': 'android-arm', 'x86_64': 'android-x64'}
     build_args += ['--target-platform', ','.join(targets[abi] for abi in options.abi)]
 subprocess.run(build_args, cwd=root, env=env, check=True)
+# package_release.py 依然会执行打包整理，debug包也可以正常整理输出
 subprocess.run([sys.executable, str(root / 'scripts' / 'package_release.py'), '--platform', 'android', *abi_args, *variant.arguments],
                cwd=root, env=env, check=True)
